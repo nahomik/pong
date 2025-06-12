@@ -5,11 +5,15 @@ pipeline {
         VERSION = "v${BUILD_NUMBER}"
         NEXUS_CREDENTIALS = credentials('nexus-creds')
     }
-
+def gitbranch = 'main'
     stages {
         stage('Checkout') {
             steps {
-                git credentialsId: 'github-creds', url: 'https://github.com/nahomik/pong.git'
+                // git credentialsId: 'github-creds', url: 'https://github.com/nahomik/pong.git'
+                  git branch: 'main', 
+            url: 'https://github.com/nahomik/pong.git', 
+            credentialsId: 'github-creds'
+    }
             }
         }
 
