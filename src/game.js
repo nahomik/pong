@@ -1,3 +1,4 @@
+// version 2.0
 const canvas = document.getElementById('pong');
 const ctx = canvas.getContext('2d');
 

@@ -1,13 +1,15 @@
 #!/bin/bash
 
-REPO_URL="http://localhost:8081/repository/web-assets/pong/v1.0"
-AUTH="admin:nahom"
+VERSION=$1
+NEXUS_URL="http://localhost:8081/repository/web-assets/pong/$VERSION"
+AUTH="$NEXUS_USER:$NEXUS_PASS"
 
-FILES=("index.html" "style.css" "game.js")
+FILES=(src/*.html src/*.css src/*.js)
 
 for FILE in "${FILES[@]}"; do
-  echo "Uploading $FILE..."
-  curl -u $AUTH --upload-file "$FILE" "$REPO_URL/$FILE"
+  BASENAME=$(basename "$FILE")
+  echo "📤 Uploading $BASENAME..."
+  curl -s -u $AUTH --upload-file "$FILE" "$NEXUS_URL/$BASENAME"
 done
 
-echo "✅ Done uploading."
+echo "✅ Uploaded version $VERSION"

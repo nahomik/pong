@@ -1,0 +1,59 @@
+pipeline {
+    agent any
+
+    environment {
+        NEXUS_CREDENTIALS = credentials('nexus-creds')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/nahomik/pong.git'
+            }
+        }
+
+        stage('Generate Version') {
+            steps {
+                script {
+                    def ts = new Date().format("yyyyMMdd-HHmmss")
+                    env.VERSION = "v-${ts}"
+                }
+            }
+        }
+
+        stage('Upload to Nexus') {
+            steps {
+                sh '''
+                export NEXUS_USER=${NEXUS_CREDENTIALS_USR}
+                export NEXUS_PASS=${NEXUS_CREDENTIALS_PSW}
+                ./upload.sh $VERSION
+                '''
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t pong-app:$VERSION .'
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                sh '''
+                docker stop pong-container || true
+                docker rm pong-container || true
+                docker run -d -p 8086:80 --name pong-container pong-app:$VERSION
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Deployed Pong version $VERSION to Docker & Nexus"
+        }
+        failure {
+            echo "❌ Pipeline failed"
+        }
+    }
+}
