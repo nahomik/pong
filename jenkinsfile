@@ -4,12 +4,19 @@ pipeline {
     environment {
         VERSION = "v${BUILD_NUMBER}"
         NEXUS_CREDENTIALS = credentials('nexus-creds')
+        GITHUB_CREDENTIALS = credentials('github-creds') // Add this for GitHub PAT
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git 'git@github.com:nahomik/pong.git'
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/nahomik/pong.git',
+                        credentialsId: 'github-creds'
+                    ]]
+                ])
             }
         }
 
