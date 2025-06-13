@@ -2,39 +2,35 @@ pipeline {
     agent any
 
     environment {
-        NEXUS_CREDENTIALS = credentials('nexus-creds')
+        GIT_REPO_URL = 'https://github.com/nahomik/pong.git'
+        NEXUS_URL = 'http://localhost:8081/repository/web-assets/'
+        NEXUS_CREDENTIALS_ID = 'nexus-creds'   // Your Nexus Jenkins credential ID
+        ZIP_FILE = 'pong.zip'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', 
-                    url: 'https://github.com/nahomik/pong.git', 
-                    credentialsId: 'github-creds'
+                git url: "${GIT_REPO_URL}"
+            }
+        }
+
+        stage('Package') {
+            steps {
+                sh "zip -r ${ZIP_FILE} pong"
             }
         }
 
         stage('Upload to Nexus') {
             steps {
-                sh '''
-                echo "🔐 Authenticating to Nexus..."
-                export NEXUS_USER=${NEXUS_CREDENTIALS_USR}
-                export NEXUS_PASS=${NEXUS_CREDENTIALS_PSW}
-
-                VERSION=v${BUILD_NUMBER}
-                echo "🚀 Uploading Pong version $VERSION to Nexus..."
-                ./upload.sh $VERSION
-                '''
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIALS_ID}", usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+                        sh """
+                            curl -v -u $NEXUS_USER:$NEXUS_PASS --upload-file ${ZIP_FILE} ${NEXUS_URL}${ZIP_FILE}
+                        """
+                    }
+                }
             }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ Successfully uploaded Pong version v${BUILD_NUMBER} to Nexus"
-        }
-        failure {
-            echo "❌ Upload failed for Pong version v${BUILD_NUMBER}"
         }
     }
 }
