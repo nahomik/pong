@@ -1,35 +1,53 @@
+// pipeline {
+//     agent any
+
+//     environment {
+//         GIT_REPO_URL = 'https://github.com/nahomik/pong.git'
+//         NEXUS_URL = 'http://localhost:8081/repository/web-assets/'
+//         NEXUS_CREDENTIALS_ID = 'nexus-creds'   // Your Nexus Jenkins credential ID
+//         ZIP_FILE = 'pong.zip'
+//     }
+
+//     stages {
+//         stage('Checkout') {
+//             steps {
+//                 git url: "${GIT_REPO_URL}"
+//             }
+//         }
+
+//         stage('Package') {
+//             steps {
+//                 sh "zip -r ${ZIP_FILE} pong"
+//             }
+//         }
+
+//         stage('Upload to Nexus') {
+//             steps {
+//                 script {
+//                     withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIALS_ID}", usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
+//                         sh """
+//                             curl -v -u $NEXUS_USER:$NEXUS_PASS --upload-file ${ZIP_FILE} ${NEXUS_URL}${ZIP_FILE}
+//                         """
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
+
 pipeline {
     agent any
-
-    environment {
-        GIT_REPO_URL = 'https://github.com/nahomik/pong.git'
-        NEXUS_URL = 'http://localhost:8081/repository/web-assets/'
-        NEXUS_CREDENTIALS_ID = 'nexus-creds'   // Your Nexus Jenkins credential ID
-        ZIP_FILE = 'pong.zip'
-    }
-
     stages {
         stage('Checkout') {
             steps {
-                git url: "${GIT_REPO_URL}"
+                git branch: 'main', url: 'https://github.com/nahomik/pong.git'
             }
         }
-
-        stage('Package') {
+        stage('Build') {
             steps {
-                sh "zip -r ${ZIP_FILE} pong"
-            }
-        }
-
-        stage('Upload to Nexus') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: "${NEXUS_CREDENTIALS_ID}", usernameVariable: 'NEXUS_USER', passwordVariable: 'NEXUS_PASS')]) {
-                        sh """
-                            curl -v -u $NEXUS_USER:$NEXUS_PASS --upload-file ${ZIP_FILE} ${NEXUS_URL}${ZIP_FILE}
-                        """
-                    }
-                }
+                echo "Build started"
+                // Add build commands here
             }
         }
     }
